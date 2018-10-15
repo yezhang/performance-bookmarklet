@@ -40,5 +40,10 @@ tableLogger.logTables([
 		name : "Requests by File Type",
 		data : data.fileTypeCounts,
 		columns : ["fileType", "count", "perc"]
+	},
+	{
+		name : "Requests by File Type (File Size)",
+		data : data.fileTypeSizes,
+		columns : ["fileType", "fileSize", "perc"]
 	}
 ]);

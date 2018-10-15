@@ -313,18 +313,31 @@ pieChartComponent.init = function () {
 		return fileType;
 	}));
 
+	function FormatByteUnit(bytes) {
+		if (typeof bytes === "number") {
+			if (bytes >= 1000) {
+				bytes = bytes / 1000;
+				return bytes + " KB";
+			}
+
+			return bytes + " KB";
+		}
+
+		return 0;
+	}
 	setupChart("Requests by File Type (TransferSize)", data.fileTypeSizes.map(function (fileType, index, fileArray) {
 
 		var totalSize = 0;
 		for (var itr = 0; itr < fileArray.length; itr++) {
 			totalSize = totalSize + fileArray[itr].fileSize;
 		}
-		fileType.perc = fileType.fileSize / totalSize;
+		fileType.count = FormatByteUnit(fileType.fileSize); // 此处命名为 count 并不恰当，仅仅为了兼容已有数据格式，用于在饼状图中显示小括号中的数据。
+		fileType.perc = Number(fileType.fileSize) * 100 / totalSize;
 		fileType.label = fileType.fileType;
 		fileType.colour = helper.getInitiatorOrFileTypeColour(fileType.fileType, helper.getRandomColor(colourRangeR, colourRangeG, colourRangeB));
-		fileType.id = "reqByFileType-" + fileType.label.replace(/[^a-zA-Z]/g, "-");
+		fileType.id = "reqByFileTypeSize-" + fileType.label.replace(/[^a-zA-Z]/g, "-");
 		return fileType;
-	}));
+	}), [], [{ name: "Requests Size", field: "fileSize" }], "pie-request-by-filesize");
 
 	setupChart("Requests by File Type (host/external domain)", data.fileTypeCountHostExt.map(function (fileType) {
 		var typeSegments = fileType.fileType.split(" ");
@@ -1879,5 +1892,9 @@ tableLogger.logTables([{
 	name: "Requests by File Type",
 	data: data.fileTypeCounts,
 	columns: ["fileType", "count", "perc"]
+}, {
+	name: "Requests by File Type (File Size)",
+	data: data.fileTypeSizes,
+	columns: ["fileType", "fileSize", "perc"]
 }]);
 },{"./data":8,"./helpers/tableLogger":16}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]);
