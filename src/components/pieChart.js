@@ -99,6 +99,19 @@ pieChartComponent.init = function(){
 		return fileType;
 	}));
 
+	setupChart("Requests by File Type (TransferSize)", data.fileTypeSizes.map((fileType, index, fileArray) => {
+		
+		var totalSize = 0;
+		for(var itr = 0; itr < fileArray.length; itr ++ ) {
+			totalSize = totalSize + fileArray[itr].fileSize;
+		}
+		fileType.perc = fileType.fileSize / totalSize;
+		fileType.label = fileType.fileType;
+		fileType.colour = helper.getInitiatorOrFileTypeColour((fileType.fileType), helper.getRandomColor(colourRangeR, colourRangeG, colourRangeB));
+		fileType.id = "reqByFileType-" + fileType.label.replace(/[^a-zA-Z]/g, "-");
+		return fileType;
+	}));
+
 	setupChart("Requests by File Type (host/external domain)", data.fileTypeCountHostExt.map((fileType) => {
 		var typeSegments = fileType.fileType.split(" ");
 		fileType.perc = fileType.count / requestsUnit;

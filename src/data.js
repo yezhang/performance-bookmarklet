@@ -67,6 +67,7 @@ data.allResourcesCalc = data.resources
 			initiatorType : currR.initiatorType || fileExtension || "SourceMap or Not Defined",
 			fileExtension : fileExtension || "XHR or Not Defined",
 			loadtime : currR.duration,
+			size: currR.transferSize, //补充了文件大小（Byte）。
 			fileType : helper.getFileType(fileExtension, currR.initiatorType),
 			isRequestToHost : urlFragments[1] === location.host
 		};
@@ -113,6 +114,8 @@ data.fileTypeCountHostExt = helper.getItemCount(data.requestsOnly.map((currR, i,
 }), "fileType");
 
 data.fileTypeCounts = helper.getItemCount(data.requestsOnly.map((currR, i, arr) => currR.fileType), "fileType");
+
+data.fileTypeSizes = helper.getItemSum(data.requestsOnly.map((currR, i, arr) => {return {"fileType": currR.fileType, "size": currR.transferSize};}), "fileType");
 
 var tempResponseEnd = {};
 //TODO: make immutable

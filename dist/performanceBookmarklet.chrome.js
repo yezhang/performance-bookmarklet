@@ -1,5 +1,5 @@
 /* https://github.com/micmro/performance-bookmarklet by Michael Mrowetz @MicMro
-   build:06/12/2015 */
+   build:15/10/2018 */
 
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
@@ -313,6 +313,19 @@ pieChartComponent.init = function () {
 		return fileType;
 	}));
 
+	setupChart("Requests by File Type (TransferSize)", data.fileTypeSizes.map(function (fileType, index, fileArray) {
+
+		var totalSize = 0;
+		for (var itr = 0; itr < fileArray.length; itr++) {
+			totalSize = totalSize + fileArray[itr].fileSize;
+		}
+		fileType.perc = fileType.fileSize / totalSize;
+		fileType.label = fileType.fileType;
+		fileType.colour = helper.getInitiatorOrFileTypeColour(fileType.fileType, helper.getRandomColor(colourRangeR, colourRangeG, colourRangeB));
+		fileType.id = "reqByFileType-" + fileType.label.replace(/[^a-zA-Z]/g, "-");
+		return fileType;
+	}));
+
 	setupChart("Requests by File Type (host/external domain)", data.fileTypeCountHostExt.map(function (fileType) {
 		var typeSegments = fileType.fileType.split(" ");
 		fileType.perc = fileType.count / requestsUnit;
@@ -332,7 +345,7 @@ module.exports = pieChartComponent;
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
 /*
-Logic for Resource Timing API Waterfall
+Logic for Resource Timing API Waterfall 
 */
 
 var data = _interopRequire(require("../data"));
@@ -706,6 +719,7 @@ data.allResourcesCalc = data.resources
 		initiatorType: currR.initiatorType || fileExtension || "SourceMap or Not Defined",
 		fileExtension: fileExtension || "XHR or Not Defined",
 		loadtime: currR.duration,
+		size: currR.transferSize, //补充了文件大小（Byte）。
 		fileType: helper.getFileType(fileExtension, currR.initiatorType),
 		isRequestToHost: urlFragments[1] === location.host
 	};
@@ -754,6 +768,10 @@ data.fileTypeCountHostExt = helper.getItemCount(data.requestsOnly.map(function (
 
 data.fileTypeCounts = helper.getItemCount(data.requestsOnly.map(function (currR, i, arr) {
 	return currR.fileType;
+}), "fileType");
+
+data.fileTypeSizes = helper.getItemSum(data.requestsOnly.map(function (currR, i, arr) {
+	return { fileType: currR.fileType, size: currR.transferSize };
 }), "fileType");
 
 var tempResponseEnd = {};
@@ -1041,6 +1059,32 @@ helper.getItemCount = function (arr, keyName) {
 	}
 	return resultArr.sort(function (a, b) {
 		return a.count < b.count ? 1 : -1;
+	});
+};
+
+//sums transferSize of items in array arr and returns them as array of key valure pairs
+//keyName overwrites the name of the key attribute
+helper.getItemSum = function (arr, keyName) {
+	var counts = {},
+	    resultArr = [],
+	    obj;
+
+	arr.forEach(function (resource) {
+		var fileType = resource.fileType;
+		var size = resource.size;
+		counts[fileType] = counts[fileType] ? counts[fileType] + size : size;
+	});
+
+	//pivot data
+	for (var fe in counts) {
+		obj = {};
+		obj[keyName || "key"] = fe;
+		obj.fileSize = counts[fe];
+
+		resultArr.push(obj);
+	}
+	return resultArr.sort(function (a, b) {
+		return a.fileSize < b.fileSize ? 1 : -1;
 	});
 };
 
@@ -1466,7 +1510,7 @@ module.exports = tableLogger;
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
 /*
-Helper to create waterfall timelines
+Helper to create waterfall timelines 
 */
 
 var svg = _interopRequire(require("../helpers/svg"));

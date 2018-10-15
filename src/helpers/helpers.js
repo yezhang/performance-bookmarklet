@@ -103,6 +103,7 @@ helper.getInitiatorOrFileTypeColour = function(initiatorOrFileType, fallbackColo
 	return colour;
 };
 
+
 //counts occurences of items in array arr and returns them as array of key valure pairs
 //keyName overwrites the name of the key attribute 
 helper.getItemCount = function(arr, keyName){
@@ -124,6 +125,32 @@ helper.getItemCount = function(arr, keyName){
 	}
 	return resultArr.sort((a, b) => {
 		return a.count < b.count ? 1 : -1;
+	});
+};
+
+//sums transferSize of items in array arr and returns them as array of key valure pairs
+//keyName overwrites the name of the key attribute 
+helper.getItemSum = function(arr, keyName){
+	var counts = {},
+		resultArr = [],
+		obj;
+
+	arr.forEach((resource) => {
+		var fileType = resource.fileType;
+		var size = resource.size;
+		counts[fileType] = counts[fileType] ? counts[fileType] + size : size;
+	});
+
+	//pivot data
+	for(var fe in counts){
+		obj = {};
+		obj[keyName||"key"] = fe;
+		obj.fileSize = counts[fe];
+
+		resultArr.push(obj);
+	}
+	return resultArr.sort((a, b) => {
+		return a.fileSize < b.fileSize ? 1 : -1;
 	});
 };
 
